@@ -34,7 +34,7 @@ public class JobArticleDAO {
     /**
      * Find all articles by job ID
      */
-    public List<JobArticle> findByJobId(int jobId) {
+    public List<JobArticle> findByJobId(long jobId) {
         String sql = "SELECT id, job_id, title, url, description, sentiment, created_at " +
                      "FROM job_articles WHERE job_id = ? ORDER BY created_at DESC";
 
@@ -42,7 +42,7 @@ public class JobArticleDAO {
 
         try (Connection con = resolveDataSource().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, jobId);
+            ps.setLong(1, jobId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     articles.add(mapRow(rs));

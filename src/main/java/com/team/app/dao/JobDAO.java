@@ -237,6 +237,28 @@ public class JobDAO {
     }
     
     /**
+     * Find the most recently created job.
+     */
+    public Job findLatest() {
+        String sql = "SELECT id, keyword, status, progress, positive, negative, neutral, " +
+                     "message, embedding, created_at, updated_at " +
+                     "FROM jobs ORDER BY created_at DESC LIMIT 1";
+
+        try (Connection con = resolveDataSource().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            Logger.error("[JobDAO] findLatest failed", e);
+            throw new RuntimeException("findLatest failed", e);
+        }
+
+        return null;
+    }
+    
+    /**
      * Update job status
      */
     public boolean updateStatus(long jobId, String status) {

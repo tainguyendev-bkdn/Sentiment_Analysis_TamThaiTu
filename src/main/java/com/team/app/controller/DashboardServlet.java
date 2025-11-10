@@ -4,6 +4,7 @@ import com.team.app.dao.JobDAO;
 import com.team.app.dao.JobArticleDAO;
 import com.team.app.model.Job;
 import com.team.app.model.JobArticle;
+import com.team.app.util.Logger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -44,15 +45,13 @@ public class DashboardServlet extends HttpServlet {
         
         try {
             // Load latest job (system-wide, no user filtering)
-            List<Job> jobs = getJobDAO().findAll();
+            Job latestJob = getJobDAO().findLatest();
             
-            if (!jobs.isEmpty()) {
-                // Get the most recent job
-                Job latestJob = jobs.get(0);
+            if (latestJob != null) {
                 request.setAttribute("job", latestJob);
                 
                 // Load articles for this job
-                List<JobArticle> articles = getJobArticleDAO().findByJobId(latestJob.getId().intValue());
+                List<JobArticle> articles = getJobArticleDAO().findByJobId(latestJob.getId());
                 request.setAttribute("articles", articles);
             } else {
                 // No jobs yet - set empty data
@@ -60,8 +59,8 @@ public class DashboardServlet extends HttpServlet {
                 request.setAttribute("articles", java.util.Collections.emptyList());
             }
         } catch (Exception e) {
-            // Log error and set empty data to prevent 500 error
-            e.printStackTrace();
+            Logger.error("[DashboardServlet] Failed to load dashboard data", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             request.setAttribute("job", null);
             request.setAttribute("articles", java.util.Collections.emptyList());
             request.setAttribute("error", "Lỗi khi tải dữ liệu: " + e.getMessage());
